@@ -1,0 +1,1 @@
+This is a little project I am working on. The main purpose is to create an engine that would simulate a space invaders type shooter but then I will create skins on top of it to adapt it to several other similar type games.
