@@ -1,21 +1,22 @@
-var rectY = 0;
-
 // Runtime game variable
 var GameIsRunning = false;
+var GameIsOver = false;
 
 // Creating game obstacles
 var obstacles;
 var bullets;
 bullets = [];
 obstacles = [];
+
 // Setting the height and width of the canvas element
 var stageWidth = 800;
 var stageHeight = 600;
 var lastObstacleCreation = 0;
 
-
+// Default number of player lives
 var NUM_LIVES = 3;
 
+// Player Object containing players attributs
 var player = {
 	lives: NUM_LIVES,
 	x: mouseX,
@@ -26,16 +27,13 @@ var player = {
 	lastCollision: -Infinity
 };
 
+// The Setup loop prepares the stage for action!
 void setup() {
 	size(stageWidth,stageHeight);
-	
 	background(0,0,0);
-	
-	PFont fontA = loadFont("courier");
-  	textFont(fontA, 14);
 }
 
-
+// This is what makes the game work. The draw loop constantly refreshes the canvas
 void draw() {
 	background(0,0,0);
 	fill(255,255,255);
@@ -48,7 +46,11 @@ void draw() {
 		DrawScore();
 		UpdateScore();
 	} else {
-		DrawOpeningScreen();
+		if(GameIsOver === false) { 
+			DrawOpeningScreen();
+		} else {
+			DrawGameOverScreen();
+		}
 	}
 }
 
@@ -56,12 +58,16 @@ void draw() {
 void mousePressed() {
 	if(GameIsRunning === false) {
 		GameIsRunning = true;
+		player.lives = NUM_LIVES;
+		player.score = 0;
+		obstacles = [];
+		bullets = [];
 	}
 }
 
 var GenerateAllObstacles = function() {
 	// Wait for the next round to be chambered
-    if (frameCount - lastObstacleCreation < 100) {
+    if (frameCount - lastObstacleCreation < 200) {
         return;
     }
 	var numObstacles = random(9);
@@ -74,8 +80,8 @@ var GenerateAllObstacles = function() {
 var CreateObstacles = function() {
 	var obstacle = [];
 	obstacle.x = random(50, stageWidth - 50);
-	obstacle.y = 0;
-	obstacle.ySpeed = 0.1 + random(2);
+	obstacle.y = 40;
+	obstacle.ySpeed = 0.1 + random(1);
 	obstacle.health = 1;
 
 	return obstacle;
@@ -87,16 +93,34 @@ var UpdateObstacles = function() {
 		rect(obstacle.x, obstacle.y, 30, 30);
 		obstacle.y += obstacle.ySpeed;
 
-		if(obstacle.y >= stageHeight || obstacle.health <= 0){
+		if(obstacle.health <= 0){
 			obstacles.splice(i,1);
 			player.score++;
+		}
+
+		if(obstacle.y >= stageHeight - 80) {
+			obstacles.splice(i,1);
+			player.lives -= 1;
+
+			if(player.lives <= 0) {
+				GameIsOver = true;
+				GameIsRunning = false;
+			}
 		}
 	}
 };
 
 var DrawOpeningScreen = function() {
 	fill(255,255,255);
-    text("Click to start the game", 300, 220);
+	
+	//Game Title
+	PFont largeFont = loadFont("calibri");
+  	textFont(largeFont, 90);
+	text("Game Title", 200, 250);
+
+	PFont smallFont = loadFont("courier");
+  	textFont(smallFont, 14);
+    text("Click to start the game", 300, 320);
 };
 
 var CreateBullets = function(posX) {
@@ -124,10 +148,11 @@ var CreateBullets = function(posX) {
 
 var UpdateBullets = function() {
 	for(var i = 0; i < bullets.length; i++) {
+		fill(255,0,0);
 		ellipse(bullets[i].x, bullets[i].y, 5, 5);
 		bullets[i].y -= bullets[i].ySpeed;
 
-		if(bullets[i].y <= 0) {
+		if(bullets[i].y <= 30) {
 			bullets.splice(i,1);
 		}
 	}
@@ -139,8 +164,9 @@ var DrawPlayer = function() {
 
 var DrawScore = function() {
 	fill(255,255,255);
-    text("Score: " + player.score, 300, 20);
-}
+    text("Score: " + player.score, 550, 30);
+    text("Number of Lives: " + player.lives, 50, 30);
+};
 
 var UpdateScore = function() {
 	for(var i = bullets.length - 1; i >= 0; i -= 1) {
@@ -155,3 +181,22 @@ var UpdateScore = function() {
 		}	
 	}
 };
+
+var DrawGameOverScreen = function() {
+	if(player.lives <= 0) {
+		
+		//Game Title
+		PFont largeFont = loadFont("calibri");
+	  	textFont(largeFont, 90);
+		text("Game Over", 200, 250);
+
+		PFont mediumFont = loadFont("calibri");
+	  	textFont(mediumFont, 28);
+	    text("Final Score: " + player.score, 330, 320);
+
+		PFont smallFont = loadFont("courier");
+	  	textFont(smallFont, 14);
+	    text("Click to start a new game", 310, 380);
+
+	}
+}
