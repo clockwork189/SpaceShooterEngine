@@ -50,9 +50,11 @@ void draw() {
 	} else {
 		DrawOpeningScreen();
 	}
+	/*
 	if(bullets != null && obstacles != null){
 		println("Bullets Length: " + bullets.length + "     Obstacles length: " + obstacles.length);		
 	}
+	*/
 
 }
 
@@ -75,7 +77,7 @@ var CreateObstacles = function() {
 
 var GenerateAllObstacles = function() {
 	// Wait for the next round to be chambered
-    if (frameCount - lastObstacleCreation < 500) {
+    if (frameCount - lastObstacleCreation < 100) {
         return;
     }
 	var numObstacles = random(9);
@@ -138,17 +140,19 @@ var DrawPlayer = function() {
 	rect(mouseX, stageHeight - 50, 50, 10);
 };
 
+var DrawScore = function() {
+	fill(255,255,255);
+    text("Score: " + player.score, 300, 20);
+}
+
 var UpdateScore = function() {
 	for(var i = 0; i < bullets.length; i++) {
 		for(var n = 0; n < obstacles.length; n++) {
-			if(bullets[i].x == obstacles[n].x && bullets[i].y == obstacles[n].y) {
+			if(bullets[i].x >= obstacles[n].x && bullets[i].x <= obstacles[n].x + 50 && bullets[i].y >= obstacles[n].y &&  bullets[i].y <= obstacles[n].y + 50) {
+				bullets.splice(i,1);
+				obstacles.splice(n,1);
 				player.score++;
 			}
 		}	
 	}
 };
-
-var DrawScore = function() {
-	fill(255,255,255);
-    text("Score: " + player.score, 300, 20);
-}
