@@ -27,6 +27,13 @@ var player = {
 	lastCollision: -Infinity
 };
 
+var obstacleGenerationProperties = {
+	timeToSpawn: 200,
+	ySpeedAddition_min: 0.1,
+	ySpeedAddition_max: 0.5,
+	numberSpawned: 5
+};
+
 // The Setup loop prepares the stage for action!
 void setup() {
 	size(stageWidth,stageHeight);
@@ -45,6 +52,7 @@ void draw() {
 		UpdateBullets();
 		DrawScore();
 		UpdateScore();
+		UpdateObstacleSpawnCharateristics();
 	} else {
 		if(GameIsOver === false) { 
 			DrawOpeningScreen();
@@ -66,11 +74,12 @@ void mousePressed() {
 }
 
 var GenerateAllObstacles = function() {
-	// Wait for the next round to be chambered
-    if (frameCount - lastObstacleCreation < 200) {
+    if (frameCount - lastObstacleCreation < obstacleGenerationProperties.timeToSpawn) {
         return;
     }
-	var numObstacles = random(9);
+
+
+	var numObstacles = random(obstacleGenerationProperties.numberSpawned);
 	for(var i = 0; i < numObstacles; i++) {
 		obstacles.push(CreateObstacles());
 	}
@@ -81,7 +90,7 @@ var CreateObstacles = function() {
 	var obstacle = [];
 	obstacle.x = random(50, stageWidth - 50);
 	obstacle.y = 40;
-	obstacle.ySpeed = 0.1 + random(1);
+	obstacle.ySpeed = 0.1 + random(obstacleGenerationProperties.ySpeedAddition_min, obstacleGenerationProperties.ySpeedAddition_max);
 	obstacle.health = 1;
 
 	return obstacle;
@@ -138,7 +147,6 @@ var CreateBullets = function(posX) {
 	bullet.x = posX;
 	bullet.y = stageHeight - 50;
 	bullet.ySpeed = 5;
-	bullet.type = "bullet";
 	bullet.damage = 1;
 
 	bullets.push(bullet);
@@ -181,6 +189,28 @@ var UpdateScore = function() {
 		}	
 	}
 };
+
+var UpdateObstacleSpawnCharateristics = function() {
+	if(player.score > 50 && player.score < 100) {
+		obstacleGenerationProperties.ySpeedAddition_min = 0.3;
+		obstacleGenerationProperties.ySpeedAddition_max = 0.6;
+		obstacleGenerationProperties.numberSpawned = 6;
+	} else if(player.score > 100 && player.score < 150) {
+		obstacleGenerationProperties.ySpeedAddition_min = 0.3;
+		obstacleGenerationProperties.ySpeedAddition_max = 0.7;
+		obstacleGenerationProperties.numberSpawned = 7;
+	} else if(player.score > 150 && player.score < 200) {
+		//obstacleGenerationProperties.timeToSpawn = 250;
+		obstacleGenerationProperties.ySpeedAddition_min = 0.4;
+		obstacleGenerationProperties.ySpeedAddition_max = 0.8;
+		obstacleGenerationProperties.numberSpawned = 8;
+	} else if(player.score > 200) {
+		//obstacleGenerationProperties.timeToSpawn = 200;
+		obstacleGenerationProperties.ySpeedAddition_min = 0.5;
+		obstacleGenerationProperties.ySpeedAddition_max = 0.9;
+		obstacleGenerationProperties.numberSpawned = 9;
+	}  
+}
 
 var DrawGameOverScreen = function() {
 	if(player.lives <= 0) {
