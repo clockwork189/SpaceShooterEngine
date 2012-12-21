@@ -41,21 +41,15 @@ void draw() {
 	fill(255,255,255);
 	if(GameIsRunning === true) {
 		DrawPlayer();
-		ShootBullets(mouseX + 25);
+		CreateBullets(mouseX + 25);
 		GenerateAllObstacles();
-		DrawObstacles();
+		UpdateObstacles();
 		UpdateBullets();
-		UpdateScore();
 		DrawScore();
+		UpdateScore();
 	} else {
 		DrawOpeningScreen();
 	}
-	/*
-	if(bullets != null && obstacles != null){
-		println("Bullets Length: " + bullets.length + "     Obstacles length: " + obstacles.length);		
-	}
-	*/
-
 }
 
 
@@ -64,16 +58,6 @@ void mousePressed() {
 		GameIsRunning = true;
 	}
 }
-
-var CreateObstacles = function() {
-	var obstacle = [];
-	obstacle.x = random(50, stageWidth - 50);
-	obstacle.y = 0;
-	obstacle.ySpeed = 0.1 + random(2);
-	obstacle.type = "obstacle";
-
-	return obstacle;
-};
 
 var GenerateAllObstacles = function() {
 	// Wait for the next round to be chambered
@@ -87,7 +71,35 @@ var GenerateAllObstacles = function() {
 	lastObstacleCreation = frameCount;
 };
 
-var ShootBullets = function(posX) {
+var CreateObstacles = function() {
+	var obstacle = [];
+	obstacle.x = random(50, stageWidth - 50);
+	obstacle.y = 0;
+	obstacle.ySpeed = 0.1 + random(2);
+	obstacle.health = 1;
+
+	return obstacle;
+};
+
+var UpdateObstacles = function() {
+	for(var i = 0; i < obstacles.length; i++) {
+		var obstacle = obstacles[i];
+		rect(obstacle.x, obstacle.y, 30, 30);
+		obstacle.y += obstacle.ySpeed;
+
+		if(obstacle.y >= stageHeight || obstacle.health <= 0){
+			obstacles.splice(i,1);
+			player.score++;
+		}
+	}
+};
+
+var DrawOpeningScreen = function() {
+	fill(255,255,255);
+    text("Click to start the game", 300, 220);
+};
+
+var CreateBullets = function(posX) {
 	// Only fire on command
     if (!mousePressed && !keyPressed) {
         return;
@@ -103,26 +115,11 @@ var ShootBullets = function(posX) {
 	bullet.y = stageHeight - 50;
 	bullet.ySpeed = 5;
 	bullet.type = "bullet";
+	bullet.damage = 1;
 
 	bullets.push(bullet);
 
 	player.lastFired = frameCount;
-};
-
-var DrawOpeningScreen = function() {
-	fill(255,255,255);
-    text("Click to start the game", 300, 220);
-};
-
-var DrawObstacles = function() {
-	for(var i = 0; i < obstacles.length; i++) {
-		rect(obstacles[i].x, obstacles[i].y, 30, 30);
-		obstacles[i].y += obstacles[i].ySpeed;
-
-		if(obstacles[i].y >= stageHeight) {
-			obstacles.splice(i,1);
-		}
-	}
 };
 
 var UpdateBullets = function() {
@@ -146,12 +143,14 @@ var DrawScore = function() {
 }
 
 var UpdateScore = function() {
-	for(var i = 0; i < bullets.length; i++) {
-		for(var n = 0; n < obstacles.length; n++) {
-			if(bullets[i].x >= obstacles[n].x && bullets[i].x <= obstacles[n].x + 50 && bullets[i].y >= obstacles[n].y &&  bullets[i].y <= obstacles[n].y + 50) {
+	for(var i = bullets.length - 1; i >= 0; i -= 1) {
+		var bullet = bullets[i];
+
+		for(var n = obstacles.length - 1; n >= 0 ; n -= 1) {
+			var obstacle = obstacles[n];
+			if(bullet.x >= obstacle.x && bullet.x <= obstacle.x + 30 && bullet.y >= obstacle.y &&  bullet.y <= obstacle.y + 30) {
+				obstacle.health -= bullet.damage;
 				bullets.splice(i,1);
-				obstacles.splice(n,1);
-				player.score++;
 			}
 		}	
 	}
